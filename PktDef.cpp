@@ -32,6 +32,9 @@ struct Header{
 
 struct DriveBody{
 
+int direction = 0;
+float duration = 0;
+float speed = 0.8;
 
 
 };
