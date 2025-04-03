@@ -1,4 +1,4 @@
-
+#include <cstring>
 
 const int FORWARD = 0;
 const int BACKWARD = 0;
@@ -6,6 +6,7 @@ const int LEFT = 0;
 const int RIGHT = 0;
 const int HEADERSIZE = 0;
 
+using namespace std;
 
 enum CmdType{
 
@@ -48,13 +49,38 @@ class PktDef {
         header = new Header();
         data = nullptr;
         CRC = 0;
+        RawBuffer = nullptr;
     }
 
 
-    PktDef(char *){
+    //turn raw data into packet object
+    PktDef(char * incomingPacket){
+        header = new Header();
 
+        //get the header stuff
+        memcpy(&header->PktCount, incomingPacket, sizeof(header->PktCount));
 
+        //get the 4 flags
+        char flags = incomingPacket[2];
+        //remove padding (MIGHT BE BACKWARDS)
+        flags >> 4;
 
+        header->Ack = flags & 1;
+        flags >> 1;
+        header->Sleep = flags & 1;
+        flags >> 1;
+        header->Status = flags & 1;
+        flags >> 1;
+        header->Drive = flags & 1;
+
+        //get the length of the data packet
+        memcpy(&header->Length, incomingPacket + 3, sizeof(header->Length));
+
+        //get the CRC
+        memcpy(&header->CRC, incomingPacket + 4, sizeof(header->CRC));
+        CRC = header->CRC;
+
+        RawBuffer = incomingPacket;
     }
 
     void SetCmd(CmdType) {
