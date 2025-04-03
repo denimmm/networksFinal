@@ -42,7 +42,8 @@ struct CmdPacket{
     Header* header;
     char* data;
     char CRC;
-}
+};
+
 
 class PktDef {
 
@@ -89,19 +90,16 @@ class PktDef {
     }
 
     void SetCmd(CmdType) {
-
-
     }
 
     void SetBodyData(char * bodyData, int dataSize){
         //copy data to the packet's data field
-        memcpy(cmdPacket->data, bodyData, dataSize)
-
-
+        memcpy(cmdPacket->data, bodyData, dataSize);
     }
 
     void SetPktCount(int count){
         cmdPacket->header->PktCount = count;
+
     }
 
     CmdType GetCmd(){
@@ -138,8 +136,7 @@ class PktDef {
     }
 
     int GetPktCount() {
-
-
+        return cmdPacket->header->PktCount;
     }
 
 
