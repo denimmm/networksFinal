@@ -38,8 +38,6 @@ unsigned int direction : 1;
 unsigned char duration : 0;
 unsigned float speed : 0.8;
 
-char CRC;
-
 };
 
 class PktDef {
