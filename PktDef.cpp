@@ -46,6 +46,10 @@ struct CmdPacket{
  char CRC;
 }
 
+CmdPacket packet;
+
+char* RawBuffer;
+
 class PktDef {
 
     Header* header;
