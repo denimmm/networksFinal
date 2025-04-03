@@ -39,11 +39,17 @@ unsigned char duration : 10;
 unsigned int speed : 80;
 };
 
+struct CmdPacket{
+ Header header;
+ char* data;
+ char CRC;
+}
+
 class PktDef {
 
     Header header;
     char* data;
-    char* CRC;
+    char CRC;
 
     char* RawBuffer;
 
