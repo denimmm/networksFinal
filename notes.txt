@@ -13,3 +13,10 @@ speed is a number from 0 - 100 as a percent
 work to do:
 -Packet.cpp
 -Server.cpp
+-MySocket.cpp
+
+
+simulator needs port number as a commandline arg
+
+-skip the video
+

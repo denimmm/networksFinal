@@ -1,0 +1,1 @@
+docker run -ti -p 23500:23500 -v C:\Users\PEKORA\Documents\DockerShared:/SharedDocker webserver_dev bash
