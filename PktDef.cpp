@@ -97,9 +97,9 @@ class PktDef {
     }
 
     void SetCmd(CmdType) {
-
-
-
+    packet.header.Drive = (cmd == DRIVE);
+    packet.header.Status = (cmd == RESPONSE);
+    packet.header.Sleep = (cmd == SLEEP);
     }
 
     void SetBodyData(char *, int){
