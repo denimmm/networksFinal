@@ -32,10 +32,13 @@ struct Header{
 
 struct DriveBody{
 
-int direction = 0;
-float duration = 0;
-float speed = 0.8;
+unsigned short DriveBody;
 
+unsigned int direction : 1;
+unsigned char duration : 0;
+unsigned float speed : 0.8;
+
+char CRC;
 
 };
 
