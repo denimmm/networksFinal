@@ -30,7 +30,7 @@ struct Header{
 
 };
 
-struct DriveBody{
+struct DriveBody(char* CRC){
 
 unsigned short DriveBody;
 
@@ -38,15 +38,14 @@ unsigned int direction : 1;
 unsigned char duration : 10;
 unsigned int speed : 80;
 
-
-char CRC
+char *CRC;
 };
 
 class PktDef {
 
     Header header;
     char* data;
-    char CRC;
+    char* CRC;
 
     char* RawBuffer;
 
