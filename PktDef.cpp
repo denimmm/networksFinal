@@ -46,6 +46,7 @@ struct CmdPacket{
 
 class PktDef {
 
+
     CmdPacket* cmdPacket;
     char* RawBuffer;
 
@@ -90,23 +91,31 @@ class PktDef {
     void SetCmd(CmdType) {
 
 
+    }
+
+    void SetBodyData(char * bodyData, int dataSize){
+        //copy data to the packet's data field
+        memcpy(cmdPacket->data, bodyData, dataSize)
+
 
     }
 
-    void SetBodyData(char *, int){
-
-
-
-    }
-
-    void SetPktCount(int){
-
-
-
+    void SetPktCount(int count){
+        cmdPacket->header->PktCount = count;
     }
 
     CmdType GetCmd(){
+        if(cmdPacket->header->Drive == 1){
+            return DRIVE;
+        }
+        else if (cmdPacket->header->Sleep == 1){
+            return SLEEP;
 
+        }
+        else if (cmdPacket->header->Ack == 1){
+            return RESPONSE;
+
+        }
 
 
     }
