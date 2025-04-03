@@ -15,7 +15,18 @@ DRIVE = 0, SLEEP = 1, RESPONSE = 2
 
 struct Header{
 
+    unsigned short PktCount;
 
+    unsigned int Drive : 1;
+    unsigned int Status : 1;
+    unsigned int Sleep : 1;
+    unsigned int Ack : 1;
+
+    unsigned int Padding : 4;
+
+    unsigned short Length;
+    
+    char CRC;
 
 };
 
