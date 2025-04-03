@@ -1,0 +1,15 @@
+milestone 1
+
+
+
+crc parity packet:
+-calculate the amount of 1s in the packet. this number is the crc
+
+speed is a number from 0 - 100 as a percent
+
+
+
+
+work to do:
+-Packet.cpp
+-Server.cpp
