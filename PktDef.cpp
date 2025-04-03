@@ -38,17 +38,16 @@ struct DriveBody{
 
 class PktDef {
 
-    Header header;
+    Header* header;
     char* data;
     char CRC;
 
     char* RawBuffer;
 
     PktDef(){
-
-
-
-
+        header = new Header();
+        data = nullptr;
+        CRC = 0;
     }
 
 
