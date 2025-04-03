@@ -108,10 +108,8 @@ class PktDef {
 
     }
 
-    void SetPktCount(int){
-
-
-
+    void SetPktCount(int count){
+    packet.header.PktCount = count;
     }
 
     CmdType GetCmd(){
@@ -138,8 +136,7 @@ class PktDef {
     }
 
     int GetPktCount() {
-
-
+    return packet.header.PktCount;
     }
 
 
