@@ -26,68 +26,63 @@ struct Header{
     unsigned int Padding : 4;
 
     unsigned short Length;
-    
-    char CRC;
 
 };
 
 struct DriveBody(char* CRC){
 
-unsigned short DriveBody;
+    unsigned short DriveBody;
 
-unsigned int direction : 1;
-unsigned char duration : 10;
-unsigned int speed : 80;
+    unsigned int direction : 1;
+    unsigned char duration : 10;
+    unsigned int speed : 80;
 };
 
 struct CmdPacket{
- Header header;
- char* data;
- char CRC;
+    Header* header;
+    char* data;
+    char CRC;
 }
 
 class PktDef {
 
-    Header* header;
-    char* data;
-    char CRC;
-
+    CmdPacket* cmdPacket;
     char* RawBuffer;
 
     PktDef(){
-        header = new Header();
-        data = nullptr;
-        CRC = 0;
+        cmdPacket = new CmdPacket();
+        cmdPacket->header = new Header();
+        cmdPacket->data = nullptr;
+        cmdPacket->CRC = 0;
         RawBuffer = nullptr;
     }
 
-
     //turn raw data into packet object
     PktDef(char * incomingPacket){
-        header = new Header();
+        cmdPacket->header = new Header();
 
         //get the header stuff
-        memcpy(&header->PktCount, incomingPacket, sizeof(header->PktCount));
+        memcpy(&cmdPacket->header->PktCount, incomingPacket, sizeof(cmdPacket->header->PktCount));
 
         //get the 4 flags
         char flags = incomingPacket[2];
         //remove padding (MIGHT BE BACKWARDS)
         flags >> 4;
 
-        header->Ack = flags & 1;
+        cmdPacket->header->Ack = flags & 1;
         flags >> 1;
-        header->Sleep = flags & 1;
+        cmdPacket->header->Sleep = flags & 1;
         flags >> 1;
-        header->Status = flags & 1;
+        cmdPacket->header->Status = flags & 1;
         flags >> 1;
-        header->Drive = flags & 1;
+        cmdPacket->header->Drive = flags & 1;
 
         //get the length of the data packet
-        memcpy(&header->Length, incomingPacket + 3, sizeof(header->Length));
+        memcpy(&cmdPacket->header->Length, incomingPacket + 3, sizeof(cmdPacket->header->Length));
 
         //get the CRC
-        memcpy(&header->CRC, incomingPacket + 4, sizeof(header->CRC));
-        CRC = header->CRC;
+        memcpy(&cmdPacket->CRC, incomingPacket + 4, sizeof(cmdPacket->CRC));
+
 
         RawBuffer = incomingPacket;
     }
