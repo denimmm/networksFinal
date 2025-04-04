@@ -105,9 +105,6 @@ class PktDef {
                 cmdPacket->header->Drive = 0;
                 return;
             }
-
-
-
         }
 
     }
@@ -139,9 +136,7 @@ class PktDef {
     }
 
     bool GetAck() {
-
-
-
+        return (cmdPacket->header->Ack == 1);
     }
 
     int GetLength(){
