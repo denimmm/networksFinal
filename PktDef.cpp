@@ -1,17 +1,15 @@
 #include <cstring>
 
-const int FORWARD = 0;
-const int BACKWARD = 0;
-const int LEFT = 0;
-const int RIGHT = 0;
-const int HEADERSIZE = 0;
+const int FORWARD = 1;
+const int BACKWARD = 2;
+const int LEFT = 3;
+const int RIGHT = 4;
+const int HEADERSIZE = 6;
 
 using namespace std;
 
 enum CmdType{
-
 DRIVE = 0, SLEEP = 1, RESPONSE = 2
-
 };
 
 struct Header{
@@ -29,13 +27,10 @@ struct Header{
 
 };
 
-struct DriveBody(char* CRC){
-
-    unsigned short DriveBody;
-
-    unsigned int direction : 1;
-    unsigned char duration : 10;
-    unsigned int speed : 80;
+struct DriveBody{
+    char direction;
+    char duration;
+    char speed;
 };
 
 struct CmdPacket{
@@ -89,7 +84,32 @@ class PktDef {
         RawBuffer = incomingPacket;
     }
 
-    void SetCmd(CmdType) {
+    void SetCmd(CmdType type) {
+
+        switch(type){
+            case DRIVE : {
+                cmdPacket->header->Drive = 1;
+                cmdPacket->header->Sleep = 0;
+                cmdPacket->header->Ack = 0;
+                return;
+            }
+            case SLEEP : {
+                cmdPacket->header->Sleep = 1;
+                cmdPacket->header->Ack = 0;
+                cmdPacket->header->Drive = 0;
+                return;
+            }
+            case RESPONSE : {
+                cmdPacket->header->Ack = 1;
+                cmdPacket->header->Sleep = 0;
+                cmdPacket->header->Drive = 0;
+                return;
+            }
+
+
+
+        }
+
     }
 
     void SetBodyData(char * bodyData, int dataSize){
