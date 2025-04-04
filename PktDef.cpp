@@ -5,6 +5,7 @@ const int BACKWARD = 2;
 const int LEFT = 3;
 const int RIGHT = 4;
 const int HEADERSIZE = 6;
+const int BODYSIZE = 3;
 
 using namespace std;
 
@@ -45,6 +46,7 @@ class PktDef {
 
     CmdPacket* cmdPacket;
     char* RawBuffer;
+    DriveBody* body;
 
     PktDef(){
         cmdPacket = new CmdPacket();
@@ -52,6 +54,7 @@ class PktDef {
         cmdPacket->data = nullptr;
         cmdPacket->CRC = 0;
         RawBuffer = nullptr;
+        body = new DriveBody();
     }
 
     //turn raw data into packet object
@@ -75,10 +78,15 @@ class PktDef {
         cmdPacket->header->Drive = flags & 1;
 
         //get the length of the data packet
-        memcpy(&cmdPacket->header->Length, incomingPacket + 3, sizeof(cmdPacket->header->Length));
+        memcpy(&cmdPacket->header->Length, incomingPacket + 3, 2);
 
+        //get the body
+        body = new DriveBody();
+        memcpy(&body->direction, incomingPacket + 5, 1);
+        memcpy(&body->duration, incomingPacket + 6, 1);
+        memcpy(&body->speed, incomingPacket + 7, 1);
         //get the CRC
-        memcpy(&cmdPacket->CRC, incomingPacket + 4, sizeof(cmdPacket->CRC));
+        memcpy(&cmdPacket->CRC, incomingPacket + 8, sizeof(cmdPacket->CRC));
 
 
         RawBuffer = incomingPacket;
@@ -139,15 +147,13 @@ class PktDef {
         return (cmdPacket->header->Ack == 1);
     }
 
+    //length of the packet in bytes
     int GetLength(){
-
+        return HEADERSIZE + BODYSIZE + sizeof(cmdPacket->CRC);
     }
 
     char *GetBodyData(){
-
-
-
-
+        return cmdPacket->data;
     }
 
     int GetPktCount() {
@@ -156,27 +162,68 @@ class PktDef {
 
 
 
-    bool CheckCRC(char *, int){
+    bool CheckCRC(char * RawBuffer, int sizeOfBuffer){
+        //get the last point in the buffer
+        int i = sizeOfBuffer;
+        int CRC = 0;
 
+        //loop through each byte
+        for(i; i > 1; i--){
+            //get the byte
+            char byte = RawBuffer[i];
 
+            while(byte != 0){
 
+                //add one if the last digit is one
+                CRC += byte & 1;
+
+                //bitshift right
+                byte >> 1;
+
+            }
+        }
+
+        return (CRC == cmdPacket->CRC);
     }
 
     void CalcCRC(){
+        //get the last point in the buffer
+        int i = sizeof(cmdPacket->data) - 1;
+        int CRC = 0;
 
+        //loop through each byte
+        for(i; i > 1; i--){
+            //get the byte
+            char byte = cmdPacket->data[i];
 
+            while(byte != 0){
 
+                //add one if the last digit is one
+                CRC += byte & 1;
+
+                //bitshift right
+                byte >> 1;
+
+            }
+        }
     }
 
     char *GenPacket(){
+        //allocate memory
+        RawBuffer = new char[GetLength()];
 
+        //serialize header
+        memcpy(RawBuffer, cmdPacket->header, HEADERSIZE);
 
+        //serialize body
 
+        int bodySize = sizeof(cmdPacket->data);
+        memcpy(RawBuffer + HEADERSIZE, cmdPacket->data, bodySize);
+
+        //serialize tail
+        memcpy(RawBuffer + HEADERSIZE + bodySize, &cmdPacket->CRC, sizeof(cmdPacket->CRC));
 
     }
-
-
-
 
 };
 
