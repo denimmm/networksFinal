@@ -45,13 +45,17 @@ PktDef::PktDef(char* incomingPacket) {
 
     //flags >>= 4;
 
-    cmdPacket->header->Ack = flags & 1;
-    flags >>= 1;
-    cmdPacket->header->Sleep = flags & 1;
+    cmdPacket->header->Drive = flags & 1;
     flags >>= 1;
     cmdPacket->header->Status = flags & 1;
     flags >>= 1;
-    cmdPacket->header->Drive = flags & 1;
+    cmdPacket->header->Sleep = flags & 1;
+    flags >>= 1;
+    cmdPacket->header->Ack = flags & 1;
+
+
+
+
 
 
 
@@ -60,7 +64,7 @@ PktDef::PktDef(char* incomingPacket) {
     index += 1;
 
     //if the body has stuff then get the stuff
-    if (cmdPacket->header->Ack != 1) {
+    if (cmdPacket->header->Length > 0) {
         cmdPacket->data = new char[cmdPacket->header->Length];
         memcpy(cmdPacket->data, incomingPacket + index, cmdPacket->header->Length);
         index += cmdPacket->header->Length;
@@ -114,8 +118,13 @@ CmdType PktDef::GetCmd() {
 }
 
 void PktDef::SetBodyData(char* bodyData, int dataSize) {
+    if (cmdPacket == nullptr) {
+        cmdPacket = new CmdPacket;
+    }
+
     cmdPacket->data = new char[dataSize];
     memcpy(cmdPacket->data, bodyData, dataSize);
+
     //update size
     cmdPacket->header->Length = dataSize;
 }
