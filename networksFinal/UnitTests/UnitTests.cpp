@@ -253,21 +253,25 @@ namespace UnitTest
 
 			//arrange
 			PktDef* packet = new PktDef();
+
+			packet->SetCmd(DRIVE); // +1
+
+			packet->SetPktCount(1); // +1
+
 			DriveBody* body = new DriveBody;
 			body->direction = 1; // +1
 			body->duration = 10; // +2
 			body->speed = 100; // +3
 
 			packet->SetBodyData((char*)body, 3);
+			// +2 for length bc body is 3 long
 
-			packet->SetCmd(DRIVE); // +1
 
-			packet->SetPktCount(1); // +1
 			//act
 			packet->CalcCRC();
 
 			//assert
-			Assert::AreEqual(packet->GetPacket()->CRC, (unsigned char)8);
+			Assert::AreEqual(packet->GetPacket()->CRC, (unsigned char)10);
 
 			delete packet;
 			delete body;
