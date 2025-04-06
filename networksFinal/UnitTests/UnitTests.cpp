@@ -6,7 +6,7 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace UnitTest
 {
-	TEST_CLASS(setters)
+	TEST_CLASS(settersAndGetters)
 	{
 	public:
 
@@ -224,23 +224,107 @@ namespace UnitTest
 			PktDef pkt2(string);
 			CmdPacket* cmdPacket = pkt2.GetPacket();
 			Assert::IsTrue(
-				//(int)cmdPacket->header->PktCount == 0 &&
-				
-				//cmdPacket->header->Drive == 1 &&
-				//cmdPacket->header->Sleep == 0 &&
-				//cmdPacket->header->Ack == 0 &&
-				//cmdPacket->header->Status == 0 &&
-				
-				//cmdPacket->header->Padding == 0 &&
+				(int)cmdPacket->header->PktCount == 0 &&
 
-				//(int)cmdPacket->header->Length == 3 &&
+				cmdPacket->header->Drive == 1 &&
+				cmdPacket->header->Sleep == 0 &&
+				cmdPacket->header->Ack == 0 &&
+				cmdPacket->header->Status == 0 &&
 
-				//strcmp(pkt2.GetBodyData(), (char*)body) &&
+				cmdPacket->header->Padding == 0 &&
+
+				(int)cmdPacket->header->Length == 3 &&
+
+				memcmp(pkt2.GetBodyData(), (char*)body, sizeof(*body)) == 0 &&
 
 				(int)cmdPacket->CRC == 9
 			);
-
 		}
+
+		TEST_METHOD(RawDataConstructorTelemetryBody)
+			{
+
+			//arrange
+			PktDef* packet1 = new PktDef();
+
+			packet1->SetCmd(STATUS);
+
+			packet1->SetPktCount(1);
+
+			StatusBody* body = new StatusBody;
+			body->LastPktCounter = 1;
+			body->CurrentGrade = 100;
+			body->HitCount = 0;
+
+			body->LastCmd = 2;
+			body->LastCmdSpeed = 100;
+			body->LastCmdValue = 1;
+
+			int size = sizeof(*body);
+			packet1->SetBodyData((char*)body, size);
+
+			packet1->CalcCRC();
+
+			char* string = packet1->GenPacket();
+			//act
+			PktDef* packet2 = new PktDef(string);
+
+
+
+
+			//assert
+			auto* cmdPacket = packet2->GetPacket();
+			Assert::IsTrue(
+				cmdPacket->header->Drive == 0 &&
+				cmdPacket->header->Sleep == 0 &&
+				cmdPacket->header->Ack == 0 &&
+				cmdPacket->header->Status == 1 &&
+
+				cmdPacket->header->Padding == 0 &&
+
+				(int)cmdPacket->header->Length == 9 &&
+			
+				memcmp(packet2->GetBodyData(), (char*)body, sizeof(*body)) == 0 &&
+			
+
+				(int)cmdPacket->CRC == 13
+			);
+
+			delete packet1;
+			delete packet2;
+			delete body;
+		}
+
+		TEST_METHOD(RawDataConstructorAck)
+		{
+			//arrange
+			PktDef pkt1;
+			pkt1.SetCmd(RESPONSE);
+
+			pkt1.CalcCRC();
+
+			char* string = pkt1.GenPacket();
+
+
+			// arrange
+			PktDef pkt2(string);
+			CmdPacket* cmdPacket = pkt2.GetPacket();
+			Assert::IsTrue(
+				(int)cmdPacket->header->PktCount == 0 &&
+
+				cmdPacket->header->Drive == 0 &&
+				cmdPacket->header->Sleep == 0 &&
+				cmdPacket->header->Ack == 1 &&
+				cmdPacket->header->Status == 0 &&
+
+				cmdPacket->header->Padding == 0 &&
+
+				(int)cmdPacket->header->Length == 0 &&
+				
+				(int)cmdPacket->CRC == 1
+			);
+		}
+
 	};
 
 
@@ -248,7 +332,7 @@ namespace UnitTest
 	TEST_CLASS(CRC) {
 
 	public:
-		TEST_METHOD(calculateCRC)
+		TEST_METHOD(calculateCRCDrive)
 		{
 
 			//arrange
@@ -276,27 +360,63 @@ namespace UnitTest
 			delete packet;
 			delete body;
 		}
-		TEST_METHOD(checkCRC)
+
+		TEST_METHOD(calculateCRCTelemetry)
+		{
+
+			//arrange
+			PktDef* packet = new PktDef();
+
+			packet->SetCmd(STATUS); // +1
+
+			packet->SetPktCount(1); // +1
+
+			StatusBody* body = new StatusBody;
+			body->LastPktCounter = 1; // +1
+			body->CurrentGrade = 100; // +3
+			body->HitCount = 0;		  // +0
+
+			body->LastCmd = 2;		  // +1
+			body->LastCmdSpeed = 100; // +3
+			body->LastCmdValue = 1;	  // +1
+
+			int size = sizeof(*body);
+			packet->SetBodyData((char*)body, size);
+			// +2 for length bc body is 9 long
+
+
+			//act
+			packet->CalcCRC();
+
+			//assert
+			Assert::AreEqual(packet->GetPacket()->CRC, (unsigned char)13);
+
+			delete packet;
+			delete body;
+		}
+		TEST_METHOD(checkCRCDrive)
 		{
 			//arrange
 			PktDef* packet = new PktDef();
+
+			packet->SetCmd(DRIVE); // +1
+			packet->SetPktCount(1); // +1
+
 			DriveBody* body = new DriveBody;
 			body->direction = 1; // +1
 			body->duration = 10; // +2
 			body->speed = 100; // +3
 
 			packet->SetBodyData((char*)body, 3);
+			// +2 for length bc body is 3 long
 
-			packet->SetCmd(DRIVE); // +1
-
-			packet->SetPktCount(1); // +1
 			//act
 			packet->CalcCRC();
 
 			char* string = packet->GenPacket();
 
 			//assert
-			Assert::IsTrue(packet->CheckCRC(string, packet->GetLength()));
+			Assert::IsTrue(packet->CheckCRC(string, packet->GetLength())); //should be 10 total
 
 			delete packet;
 

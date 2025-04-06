@@ -8,9 +8,9 @@ const int RIGHT = 4;
 const int HEADERSIZE = 4;
 
 enum CmdType {
-    DRIVE = 0, SLEEP = 1, RESPONSE = 2, UNKOWN =3
+    DRIVE = 0, SLEEP = 1, RESPONSE = 2, STATUS = 3, UNKOWN = 4
 };
-
+#pragma pack(push, 1)
 struct Header {
 
     unsigned short PktCount;
@@ -32,6 +32,8 @@ struct DriveBody {
     unsigned char speed;
 };
 
+//9 bytes long
+
 struct StatusBody {
     unsigned short int LastPktCounter;
     unsigned short int CurrentGrade;
@@ -41,6 +43,7 @@ struct StatusBody {
     unsigned char LastCmdValue;
     unsigned char LastCmdSpeed;
 };
+#pragma pack(pop)
 
 struct CmdPacket {
     Header* header;

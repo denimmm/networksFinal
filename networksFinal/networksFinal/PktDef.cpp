@@ -84,18 +84,28 @@ void PktDef::SetCmd(CmdType type) {
             cmdPacket->header->Drive = 1;
             cmdPacket->header->Sleep = 0;
             cmdPacket->header->Ack = 0;
+            cmdPacket->header->Status = 0;
             return;
         }
         case SLEEP: {
             cmdPacket->header->Sleep = 1;
             cmdPacket->header->Ack = 0;
             cmdPacket->header->Drive = 0;
+            cmdPacket->header->Status = 0;
             return;
         }
         case RESPONSE: {
             cmdPacket->header->Ack = 1;
             cmdPacket->header->Sleep = 0;
             cmdPacket->header->Drive = 0;
+            cmdPacket->header->Status = 0;
+            return;
+        }
+        case STATUS: {
+            cmdPacket->header->Status = 1;
+            cmdPacket->header->Sleep = 0;
+            cmdPacket->header->Drive = 0;
+            cmdPacket->header->Ack = 0;
             return;
         }
     }
@@ -173,11 +183,9 @@ void PktDef::CalcCRC() {
 int PktDef::Count1s(char* RawBuffer, int size) {
 
     //get crc of header
-    int CRC = 0;
-    int i = HEADERSIZE - 1;
-    
+    int CRC = 0;   
 
-    for (int x = 0; x < size; x++) {
+    for (int x = 0; x < size -1; x++) {
         char byte = *(RawBuffer + x);
 
         while (byte != 0) {
@@ -193,32 +201,23 @@ int PktDef::Count1s() {
 
     //get crc of header
     int CRC = 0;
-    int i = HEADERSIZE - 1;
+    int i = 0;
 
-    DEBUG_MSG("starting index: " << i);
-    //error handling
-    if (i >= 0) {
+    //for each byte, extract 1s until it is equal to zero
+    for (i; i < HEADERSIZE; i++) {
+        DEBUG_MSG("current i: " << i);
+        char byte = ((char*)cmdPacket->header)[i];
 
-        for (i; i >= 0; i--) {
-            DEBUG_MSG("current i: " << i);
-            char byte = ((char*)cmdPacket->header)[i];
-
-            while (byte != 0) {
-                CRC += byte & 1;
-                byte >>= 1;
-            }
+        while (byte != 0) {
+            CRC += byte & 1;
+            byte >>= 1;
         }
     }
+    
 
     //get crc of the data
-    //get crc from the data
-    i = cmdPacket->header->Length - 1;
 
-    DEBUG_MSG("starting index: " << i);
-    //error handling
-    if (i >= 0) {
-
-        for (i; i >= 0; i--) {
+        for (i = 0; i < cmdPacket->header->Length; i++) {
             DEBUG_MSG("current i: " << i);
             char byte = cmdPacket->data[i];
 
@@ -227,31 +226,40 @@ int PktDef::Count1s() {
                 byte >>= 1;
             }
         }
-    }
 
     return CRC;
 }
 
 char* PktDef::GenPacket() {
-
+    int length = GetLength();
+    bool hasData = (cmdPacket->data != nullptr);
 
     DEBUG_MSG("generating packet:\n");
-    DEBUG_MSG("size: " << GetLength());
+    DEBUG_MSG("size: " << length);
 
     if (RawBuffer != nullptr) {
         delete RawBuffer;
     }
 
-    RawBuffer = new char[GetLength()];
+    //5 is the smallest possible packet
+    if (length < HEADERSIZE + 1) {
+        length = HEADERSIZE + 1;
+    }
+
+    RawBuffer = new char[length];
+
+
 
     //copy header to rawpacket
     memcpy(RawBuffer, cmdPacket->header, HEADERSIZE);
 
     DEBUG_MSG("RAWBUFFER: " << RawBuffer);
-    DEBUG_MSG("DATA: " << cmdPacket->data);
+    if (hasData) DEBUG_MSG("DATA: " << cmdPacket->data);
+
     DEBUG_MSG("DATALENGTH: " << cmdPacket->header->Length);
     
-    memcpy(RawBuffer + HEADERSIZE, cmdPacket->data, cmdPacket->header->Length);
+    //copy the data to the rawBuffer
+    if (hasData) memcpy(RawBuffer + HEADERSIZE, cmdPacket->data, cmdPacket->header->Length);
 
     memcpy(RawBuffer + HEADERSIZE + cmdPacket->header->Length, &cmdPacket->CRC, sizeof(cmdPacket->CRC));
 
