@@ -1,5 +1,6 @@
 #include "MySocket.h"
-
+#include <stdint.h>
+#include "PktDef.h"
 //constructor
 MySocket::MySocket(SocketType stype, std::string newIP, unsigned int newport, ConnectionType ctype, unsigned int bufferSize)
 {
@@ -51,9 +52,12 @@ void MySocket::SendData(const char*, int)
 
 }
 
-int MySocket::GetData(char*)
-{
 
+int MySocket::GetData(char* dest)
+{
+    int length = (unsigned int)Buffer[3] + HEADERSIZE + 1;//4th position in buffer is packet length
+    memcpy(dest, Buffer, length);
+    return length;
 }
 
 std::string MySocket::GetIPAddr()
