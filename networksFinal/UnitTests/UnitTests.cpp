@@ -47,6 +47,19 @@ namespace UnitTest
 			delete packet;
 		}
 
+		TEST_METHOD(setCmdStatus)
+		{
+			//arrange
+			PktDef* packet = new PktDef();
+			//act
+			packet->SetCmd(STATUS);
+
+			//assert
+			Assert::IsTrue(packet->GetCmd() == STATUS);
+
+			delete packet;
+		}
+
 		TEST_METHOD(setBodyDataDrive)
 		{
 			//arrange
