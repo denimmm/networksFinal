@@ -434,9 +434,6 @@ namespace PacketTests
 			delete packet;
 
 		}
-
-
-
 	};
 
 
