@@ -4,7 +4,7 @@
 
 using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
-namespace UnitTest
+namespace PacketTests
 {
 	TEST_CLASS(settersAndGetters)
 	{

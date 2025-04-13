@@ -10,6 +10,7 @@ const int HEADERSIZE = 4;
 enum CmdType {
     DRIVE = 0, SLEEP = 1, RESPONSE = 2, STATUS = 3, UNKOWN = 4
 };
+
 #pragma pack(push, 1)
 struct Header {
 

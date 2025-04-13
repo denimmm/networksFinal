@@ -1,6 +1,16 @@
+#define _WINSOCK_DEPRECATED_NO_WARNINGS
+
+#pragma comment(lib, "Ws2_32.lib")
+
 #include "MySocket.h"
 #include <stdint.h>
 #include "PktDef.h"
+#include <iostream>
+
+#include <winsock2.h>
+#include <ws2tcpip.h>
+using namespace std;
+
 //constructor
 MySocket::MySocket(SocketType stype, std::string newIP, unsigned int newport, ConnectionType ctype, unsigned int bufferSize)
 {
@@ -18,8 +28,31 @@ MySocket::MySocket(SocketType stype, std::string newIP, unsigned int newport, Co
         Buffer = new char[DEFAULT_SIZE];
     }
 
-    //set up tcp or udp sockets to receive
 
+    
+    //wsa startup
+    WSADATA wsaData;
+    if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
+        cout << "ERROR: Failed to start WSA" << endl;
+        return;
+    }
+
+
+    SvrAddr.sin_family = AF_INET;
+    SvrAddr.sin_port = htons(newport);
+    SvrAddr.sin_addr.s_addr = inet_addr(newIP.c_str());
+
+    //set up tcp or udp sockets to receive
+    if (ctype == TCP) {
+        
+
+
+
+    }
+    else {
+
+
+    }
 
 }
 
