@@ -49,19 +49,17 @@ namespace MySocketTests
         TEST_METHOD(GetData_CopiesDataFromBuffer)
         {
             MySocket socket(CLIENT, "127.0.0.1", 8080, TCP, 1024);
-
-            // Simulate a message in Buffer: length byte at Buffer[3]
+            
             char* internalBuffer = reinterpret_cast<char*>(malloc(1024));
-            internalBuffer[3] = 10; // Packet size
+            internalBuffer[3] = 10; //Packet size
             for (int i = 0; i < 15; i++) internalBuffer[i] = (char)i;
 
-            // Hack into internal Buffer (normally you'd use friend class or better test design)
             memcpy((char*)socket, internalBuffer, 1024);
 
             char dest[1024] = {};
             int copied = socket.GetData(dest);
 
-            Assert::AreEqual((int)(10 + HEADERSIZE + 1), copied);  // HEADERSIZE is assumed defined
+            Assert::AreEqual((int)(10 + HEADERSIZE + 1), copied);  //headersize assumed is defined
         }
     };
 }
