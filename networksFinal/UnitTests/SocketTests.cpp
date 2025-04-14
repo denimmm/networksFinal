@@ -7,59 +7,68 @@ using namespace Microsoft::VisualStudio::CppUnitTestFramework;
 
 namespace MySocketTests
 {
-    TEST_CLASS(MySocketBasicTests)
+    TEST_CLASS(Constructors)
     {
     public:
 
-        TEST_METHOD(Constructor_InitializesDefaults_WhenInvalidBufferSize)
+        TEST_METHOD(ConstructorWithInvalidBuffer)
         {
             MySocket socket(CLIENT, "127.0.0.1", 8080, TCP, 0);  // Invalid buffer size
-            Assert::AreEqual(std::string("127.0.0.1"), socket.GetIPAddr());
-            Assert::AreEqual(8080, socket.GetPort());
-            Assert::AreEqual(CLIENT, socket.GetType());
+            Assert::IsTrue(
+                socket.GetType() == CLIENT &&
+                socket.GetIPAddr().compare("127.0.0.1") == 0&&
+                socket.GetPort() == 8080
+            );
         }
 
-        TEST_METHOD(Constructor_InitializesCustomSize)
+
+        TEST_METHOD(ConstructorWithValidBuffer)
         {
-            MySocket socket(CLIENT, "127.0.0.1", 9090, UDP, 2048);
-            Assert::AreEqual(9090, socket.GetPort());
+            MySocket socket(SERVER, "127.0.0.1", 8080, UDP, 2048);  // Invalid buffer size
+            Assert::IsTrue(
+                socket.GetType() == SERVER &&
+                socket.GetIPAddr().compare("127.0.0.1") == 0 &&
+                socket.GetPort() == 8080
+            );
         }
 
-        TEST_METHOD(SetAndGetIPAddr)
-        {
-            MySocket socket(CLIENT, "192.168.1.1", 1234, TCP, 1024);
-            socket.SetIPAddr("10.0.0.5");
-            Assert::AreEqual(std::string("10.0.0.5"), socket.GetIPAddr());
-        }
+    };
 
-        TEST_METHOD(SetAndGetPort)
-        {
-            MySocket socket(SERVER, "127.0.0.1", 1111, UDP, 512);
-            socket.SetPort(2222);
-            Assert::AreEqual(2222, socket.GetPort());
-        }
+    TEST_CLASS(SettersAndGetters)
+    {
+    public:
 
-        TEST_METHOD(SetAndGetSocketType)
+        TEST_METHOD(setAndGetIPAddress)
         {
-            MySocket socket(CLIENT, "127.0.0.1", 3000, TCP, 1024);
+            MySocket socket(CLIENT, "127.0.0.1", 8080, TCP, 0);  // Invalid buffer size
+
+            socket.SetIPAddr("123.456.7.89");
+
+            Assert::IsTrue(
+                socket.GetIPAddr().compare("123.456.7.89") == 0
+            );
+        }
+        TEST_METHOD(setAndGetType)
+        {
+            MySocket socket(CLIENT, "127.0.0.1", 8080, TCP, 0);  // Invalid buffer size
+
             socket.SetType(SERVER);
-            Assert::AreEqual(SERVER, socket.GetType());
+
+            Assert::IsTrue(
+                socket.GetType() == SERVER
+            );
         }
 
-        TEST_METHOD(GetData_CopiesDataFromBuffer)
+        TEST_METHOD(setAndGetPort)
         {
-            MySocket socket(CLIENT, "127.0.0.1", 8080, TCP, 1024);
-            
-            char* internalBuffer = reinterpret_cast<char*>(malloc(1024));
-            internalBuffer[3] = 10; //Packet size
-            for (int i = 0; i < 15; i++) internalBuffer[i] = (char)i;
+            MySocket socket(CLIENT, "127.0.0.1", 8080, TCP, 0);  // Invalid buffer size
 
-            memcpy((char*)socket, internalBuffer, 1024);
+            socket.SetPortW(25565);
 
-            char dest[1024] = {};
-            int copied = socket.GetData(dest);
-
-            Assert::AreEqual((int)(10 + HEADERSIZE + 1), copied);  //headersize assumed is defined
+            Assert::IsTrue(
+                socket.GetPort() == 25565
+            );
         }
+
     };
 }

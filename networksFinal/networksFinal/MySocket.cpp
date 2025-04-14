@@ -55,6 +55,7 @@ MySocket::MySocket(SocketType stype, std::string newIP, unsigned int newport, Co
     }
     else {  
         ConnectionSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        WelcomeSocket = ConnectionSocket;
 
     }
 
@@ -149,6 +150,7 @@ void MySocket::SendData(const char* data, int length)
         send(ConnectionSocket, data, length, 0);
     }
     else if (connectionType == UDP) {
+        cout << "\nsending with mySocket: " << mySocket << " and connectionType: " << connectionType << "\n";
         sendto(ConnectionSocket, data, length, 0, (SOCKADDR*)&SvrAddr, sizeof(SvrAddr));
     }
 }

@@ -2,7 +2,7 @@
 //
 
 #include "PktDef.h"
-
+#include "MySocket.h"
 #include <iostream>
 
 using namespace std;
@@ -49,9 +49,21 @@ int main()
     cout << "PACKET 2 RAWDATA: \n";
     printAsHex(packet2->GenPacket(), packet2->GetLength());
 
+
+
+
+    MySocket* socket = new MySocket(CLIENT, "127.0.0.1", 5000, UDP, 1024);
+
+
+    //socket tests
+    cout << "\n packet size to be sent: " << packet->GetLength();
+
+    socket->SendData(rawData, packet->GetLength());
+
     delete packet;
     delete packet2;
     delete body;
+    delete socket;
 }
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
