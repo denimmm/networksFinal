@@ -19,71 +19,81 @@ MySocket::MySocket(SocketType stype, std::string newIP, unsigned int newport, Co
     Port = newport;
     connectionType = ctype;
     bTCPConnect = false;
-    //initialize sockets
     WelcomeSocket = INVALID_SOCKET;
     ConnectionSocket = INVALID_SOCKET;
-
-    //zero initialize svrAddr to prevent garbage
+    
     memset(&SvrAddr, 0, sizeof(SvrAddr));
 
+    //allocate buffer
     if (bufferSize > 0) {
         MaxSize = bufferSize;
         Buffer = new char[bufferSize];
-    }
-    else {
+    } else {
         MaxSize = DEFAULT_SIZE;
         Buffer = new char[DEFAULT_SIZE];
     }
-    
-    //wsa startup
+    //start winsock
     WSADATA wsaData;
     if (WSAStartup(MAKEWORD(2, 2), &wsaData) != 0) {
-        cout << "ERROR: Failed to start WSA" << endl;
+        std::cout << "ERROR: Failed to start WSA" << std::endl;
         return;
     }
-
-    //set up addr
+    //address struct
     SvrAddr.sin_family = AF_INET;
     SvrAddr.sin_port = htons(newport);
     SvrAddr.sin_addr.s_addr = inet_addr(newIP.c_str());
 
-    //set up tcp or udp sockets to receive
-    if (ctype == TCP) {
-        
-        WelcomeSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+    //tcp
+    if (connectionType == TCP) {
+        if (stype == SERVER) {
+            WelcomeSocket = socket(AF_INET, SOCK_STREAM, IPPROTO_TCP);
+            if (WelcomeSocket == INVALID_SOCKET) {
+                std::cout << "ERROR: TCP Server socket creation failed" << std::endl;
+                WSACleanup();
+                return;
+            }
 
-    }
-    else {  
-        ConnectionSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
-        WelcomeSocket = ConnectionSocket;
+            if (bind(WelcomeSocket, (SOCKADDR*)&SvrAddr, sizeof(SvrAddr)) == SOCKET_ERROR) {
+                std::cout << "ERROR: TCP bind failed" << std::endl;
+                closesocket(WelcomeSocket);
+                WSACleanup();
+                return;
+            }
 
-    }
-
-
-
-    //bind server sockets
-    if (stype == SERVER) {
-        //bind
-        if (bind(WelcomeSocket, (SOCKADDR*)&SvrAddr, sizeof(SvrAddr)) == SOCKET_ERROR) {
-            std::cout << "ERROR: Bind failed" << std::endl;
-            closesocket(WelcomeSocket);
-            WSACleanup();
-            return;
-        }
-
-        //listen
-        if (ctype == TCP) {
             if (listen(WelcomeSocket, SOMAXCONN) == SOCKET_ERROR) {
-                std::cout << "ERROR: Listen failed" << std::endl;
+                std::cout << "ERROR: TCP listen failed" << std::endl;
                 closesocket(WelcomeSocket);
                 WSACleanup();
                 return;
             }
         }
+        else if (stype == CLIENT) {
+            //tcp client will create socket & connect later
+        }
     }
+    //udp
+    else if (connectionType == UDP) {
+        ConnectionSocket = socket(AF_INET, SOCK_DGRAM, IPPROTO_UDP);
+        if (ConnectionSocket == INVALID_SOCKET) {
+            std::cout << "ERROR: UDP socket creation failed" << std::endl;
+            WSACleanup();
+            return;
+        }
 
+        if (stype == SERVER) {
+            if (bind(ConnectionSocket, (SOCKADDR*)&SvrAddr, sizeof(SvrAddr)) == SOCKET_ERROR) {
+                std::cout << "ERROR: UDP bind failed" << std::endl;
+                closesocket(ConnectionSocket);
+                WSACleanup();
+                return;
+            }
+        }
 
+        //save socket into welcomesocket in case the code later checks it
+        WelcomeSocket = ConnectionSocket;
+    }
 }
+
 
 //destructor
 MySocket::~MySocket()
