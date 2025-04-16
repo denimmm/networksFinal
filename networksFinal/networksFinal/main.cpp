@@ -4,6 +4,43 @@
 #include "PktDef.h"
 #include "MySocket.h"
 #include <iostream>
+#define CROW_MAIN
+
+#include "crow_all.h"
+using namespace std;
+
+int main()
+{
+    crow::SimpleApp app;
+
+    CROW_ROUTE(app, "/")
+        ([]() { 
+            return "<h1>Hello CSCN72050. My name is: denim </h1>";
+        
+        });
+
+
+    CROW_ROUTE(app, "/connect/<string>/<int>")
+        ([](string ipAddress, int port) {
+            return "connecting";
+        });
+
+    //put route for telecommand
+    CROW_ROUTE(app, "/telecommand/").methods(crow::HTTPMethod::Put)
+        ([]() {
+        return "connecting";
+            });
+
+    //put route for telecommand
+    CROW_ROUTE(app, "/telemetry_request/").methods(crow::HTTPMethod::Get)
+        ([]() {
+        return "connecting";
+            });
+
+
+    app.port(23500).multithreaded().run();
+    return 1;
+}
 
 using namespace std;
 
@@ -17,54 +54,54 @@ void printAsHex(char* string, int size) {
     
 }
 
-int main()
-{
-    PktDef* packet = new PktDef();
-
-    packet->SetCmd(DRIVE);
-
-    packet->SetPktCount(1);
-
-    DriveBody* body = new DriveBody;
-    body->direction = 1;
-    body->duration = 10;
-    body->speed = 100;
-
-    packet->SetBodyData((char*)body, sizeof(*body));
-
-    packet->CalcCRC();
-
-    char * rawData = packet->GenPacket();
-
-
-    packet->print();
-
-    PktDef* packet2 = new PktDef(rawData);
-
-    //packet2->print();
-
-    cout << "\nPACKET 1 RAWDATA: \n";
-    printAsHex(rawData, packet->GetLength());
-
-    cout << "PACKET 2 RAWDATA: \n";
-    printAsHex(packet2->GenPacket(), packet2->GetLength());
-
-
-
-
-    MySocket* socket = new MySocket(CLIENT, "127.0.0.1", 5000, UDP, 1024);
-
-
-    //socket tests
-    cout << "\n packet size to be sent: " << packet->GetLength();
-
-    socket->SendData(rawData, packet->GetLength());
-
-    delete packet;
-    delete packet2;
-    delete body;
-    delete socket;
-}
+//int main()
+//{
+//    PktDef* packet = new PktDef();
+//
+//    packet->SetCmd(DRIVE);
+//
+//    packet->SetPktCount(1);
+//
+//    DriveBody* body = new DriveBody;
+//    body->direction = 1;
+//    body->duration = 10;
+//    body->speed = 100;
+//
+//    packet->SetBodyData((char*)body, sizeof(*body));
+//
+//    packet->CalcCRC();
+//
+//    char * rawData = packet->GenPacket();
+//
+//
+//    packet->print();
+//
+//    PktDef* packet2 = new PktDef(rawData);
+//
+//    //packet2->print();
+//
+//    cout << "\nPACKET 1 RAWDATA: \n";
+//    printAsHex(rawData, packet->GetLength());
+//
+//    cout << "PACKET 2 RAWDATA: \n";
+//    printAsHex(packet2->GenPacket(), packet2->GetLength());
+//
+//
+//
+//
+//    MySocket* socket = new MySocket(CLIENT, "127.0.0.1", 5000, UDP, 1024);
+//
+//
+//    //socket tests
+//    cout << "\n packet size to be sent: " << packet->GetLength();
+//
+//    socket->SendData(rawData, packet->GetLength());
+//
+//    delete packet;
+//    delete packet2;
+//    delete body;
+//    delete socket;
+//}
 
 // Run program: Ctrl + F5 or Debug > Start Without Debugging menu
 // Debug program: F5 or Debug > Start Debugging menu
