@@ -9,8 +9,15 @@
 #include "crow_all.h"
 using namespace std;
 
+MySocket* connect(string IPAddress, int port) {
+    return new MySocket(CLIENT, IPAddress, port, UDP, 1024);
+}
+
 int main()
 {
+    static MySocket* socket = nullptr;
+
+
     crow::SimpleApp app;
 
     CROW_ROUTE(app, "/")
@@ -21,8 +28,14 @@ int main()
 
 
     CROW_ROUTE(app, "/connect/<string>/<int>")
-        ([](string ipAddress, int port) {
-            return "connecting";
+        ([](const crow::request& req, string ipAddress, int port) {
+
+            //clean up old socket
+            if (socket) {
+                delete socket;
+            }
+
+            socket = connect(ipAddress, port);
         });
 
     //put route for telecommand

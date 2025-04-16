@@ -38,6 +38,7 @@ MySocket::MySocket(SocketType stype, std::string newIP, unsigned int newport, Co
         std::cout << "ERROR: Failed to start WSA" << std::endl;
         return;
     }
+
     //address struct
     SvrAddr.sin_family = AF_INET;
     SvrAddr.sin_port = htons(newport);
