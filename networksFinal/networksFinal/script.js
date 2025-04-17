@@ -1,4 +1,4 @@
-const baseUrl = "http://localhost:5000";
+const baseUrl = "http://localhost:23500";
 
 async function connect() {
     const ip = document.getElementById("ip").value;
